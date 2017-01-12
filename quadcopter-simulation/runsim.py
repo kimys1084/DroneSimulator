@@ -1,4 +1,4 @@
-
+import render as r
 import quadPlot as plt
 import controller
 import trajGen
@@ -10,7 +10,7 @@ import time as thread_time
 control_frequency = 200 # Hz for attitude control loop
 dt = 1.0 / control_frequency
 time = [0.0]
-wayPoints = [[0,0,0], [0.0,0.2,1], [0,0.4,2], [0,0.7,3], [1,0,5]]
+wayPoints = [[0,0,0], [0.0,20,20], [0,40,30], [20,30,40], [50,50,50]]
 totalTime = 5.0
 plt.drawpoints(wayPoints)
 
@@ -33,17 +33,18 @@ def main():
 	pos = (0,0,0)
 	attitude = (0,0,np.pi/2)
 	quadcopter = Quadcopter(pos, attitude)
-	sched = scheduler.Scheduler()
-	sched.add_task(attitudeControl, dt, (quadcopter,time))
-	kEvent_Render = sched.add_event(render, (quadcopter,))
-	plt.plot_quad_3d((sched, kEvent_Render))
-	try:
-		while True:
-			thread_time.sleep(5)
-	except KeyboardInterrupt:
-		print ("attempting to close threads.")
-		sched.stop()
-		print ("terminated.")
+
+	trajectory = trajGen.snap_Trajectory(wayPoints, totalTime, dt)
+
+	r.init(trajectory)
+	#sched = scheduler.Scheduler()
+	#sched.add_task(attitudeControl, dt, (quadcopter,time))
+	#kEvent_Render = sched.add_event(render, (quadcopter,))
+	#plt.plot_quad_3d((sched, kEvent_Render))
+	r.draw_world()
+	
+
+
 
 if __name__ == "__main__":
     main()

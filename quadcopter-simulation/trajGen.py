@@ -39,9 +39,10 @@ def genLine(t):
 	return DesiredState(pos, vel, acc, yaw, yawdot)
 
 
-def snap_Trajectory(wayPoints, end, time):
+def snap_Trajectory(wayPoints, end, dt):
 
-	print time
+	time =0.0
+	T =0.0
 	n = len(wayPoints) -1
 
 	t_index =0
@@ -108,39 +109,41 @@ def snap_Trajectory(wayPoints, end, time):
 
 	alpha = np.linalg.inv(A).dot(b)
 
-
-
 	
-	if ( time >= end):
-		pos = wayPoints[-1]
-		vel = np.zeros(3)
-		acc = np.zeros(3)
-	else:
-		for i in range(0, len(traj_time)):
-			if traj_time[i][0] <= time and time < traj_time[i][1]:
-				t_index = i
-				break
-		
-		if( time == 0.0):
-			pos = wayPoints[0]
+	trajectory_list = []
+
+	while time <= end:	
+		if ( time == end):
+			pos = wayPoints[-1]
 			vel = np.zeros(3)
 			acc = np.zeros(3)
 		else:
-			if t_index > 0:
-				time  = time - traj_time[t_index][0]
+			for i in range(0, len(traj_time)):
+				if traj_time[i][0] <= time and time < traj_time[i][1]:
+					t_index = i
+					break
+		
+			if( time == 0.0):
+				pos = wayPoints[0]
+				vel = np.zeros(3)
+				acc = np.zeros(3)
+			else:
+				if t_index > 0:
+					T  = time - traj_time[t_index][0]
 			
 		
-		scale = time / interval
-		coefficients = alpha[8*(t_index) : 8*(t_index+1), : ]
+			scale = T / interval
+			coefficients = alpha[8*(t_index) : 8*(t_index+1), : ]
 		
-		pos = np.array([1, scale, scale**2, scale**3, scale**4, scale**5, scale**6, scale**7]).dot(coefficients)
-		vel = np.array([0, 1, 2*scale, 3*scale**2, 4*scale**3, 5*scale**4, 6*scale**5, 7*scale**6]).dot(coefficients)
-		acc = np.array([0, 0, 2, 6*scale, 12*scale**2, 20*scale**3, 30*scale**4, 42*scale**5]).dot(coefficients)
+			pos = np.array([1, scale, scale**2, scale**3, scale**4, scale**5, scale**6, scale**7]).dot(coefficients)
+			vel = np.array([0, 1, 2*scale, 3*scale**2, 4*scale**3, 5*scale**4, 6*scale**5, 7*scale**6]).dot(coefficients)
+			acc = np.array([0, 0, 2, 6*scale, 12*scale**2, 20*scale**3, 30*scale**4, 42*scale**5]).dot(coefficients)
 
-	yaw = 0
-	yawdot = 0
+		yaw = 0
+		yawdot = 0
+		time +=dt
 		
-	DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
-	return DesiredState(pos, vel, acc, yaw, yawdot)
+		DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
+		trajectory_list.append(DesiredState(pos, vel, acc, yaw, yawdot))
 
-		
+	return trajectory_list
