@@ -7,11 +7,13 @@ from math import sin, cos
 
 # Constants
 k_d_x = 30
-k_p_x = 3
 k_d_y = 30
-k_p_y = 3
-k_p_z = 1000
 k_d_z = 200
+
+k_p_x = 1000
+k_p_y = 1000
+k_p_z = 1000
+
 k_p_phi = 160
 k_d_phi = 3
 k_p_theta = 160

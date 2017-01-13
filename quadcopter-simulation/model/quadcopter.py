@@ -42,6 +42,7 @@ class Quadcopter:
 		world_frame = quadWorldFrame[0:3]
 		return world_frame
 
+	
 	def position(self):
 		return self.state[0:3]
 

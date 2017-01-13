@@ -128,10 +128,10 @@ def snap_Trajectory(wayPoints, end, dt):
 				vel = np.zeros(3)
 				acc = np.zeros(3)
 			else:
-				if t_index > 0:
+				if t_index >= 0:
 					T  = time - traj_time[t_index][0]
 			
-		
+	
 			scale = T / interval
 			coefficients = alpha[8*(t_index) : 8*(t_index+1), : ]
 		
@@ -142,7 +142,6 @@ def snap_Trajectory(wayPoints, end, dt):
 		yaw = 0
 		yawdot = 0
 		time +=dt
-		
 		DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
 		trajectory_list.append(DesiredState(pos, vel, acc, yaw, yawdot))
 
