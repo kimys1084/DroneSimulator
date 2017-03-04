@@ -1,0 +1,159 @@
+import numpy as np
+import model.params as params
+import pprint as pp	
+from math import sin, cos, asin, atan2, sqrt
+from utils.utils import RPYToRot, RotToRPY
+
+#controller version 2
+
+#Dynamics Modeling and Trajectory Tracking Control fof a Quadrotor unmanned Aerial Vehicle
+
+
+
+#Constants
+
+#TODO matrix gochigi
+
+K_P1 = np.array([[0.90528 , 0. , 0.],
+				[0., 0.90528, 0.],
+				[0. ,0. , 0.45264]])
+K_I1 = np.array([[0.02560 , 0. , 0.],
+				[0., 0.02560, 0.],
+				[0. ,0. , 0.0064]])
+
+K_P2 = np.array([[3.6764*params.mass , 0. , 0.],
+				[0., 3.6764*params.mass, 0.],
+				[0. ,0. , 2.5452*params.mass]])
+K_I2 = np.array([[0.4225*params.mass , 0. , 0.],
+				[0., 0.4225*params.mass, 0.],
+				[0. ,0. , 0.2025*params.mass]])
+
+
+K_P3 = np.array([[4.5248 , 0. , 0.],
+				[0., 4.5248, 0.],
+				[0. ,0. , 3.61984]])
+K_I3 = np.array([[2.56 , 0. , 0.],
+				[0., 2.56, 0.],
+				[0. ,0. , 1.6384]])
+
+K_P4 = np.array([[12.726*params.mass , 0. , 0.],
+				[0., 12.726*params.mass, 0.],
+				[0. ,0. , 11.312*params.mass]])
+K_I4 = np.array([[20.25*params.mass , 0. , 0.],
+				[0., 20.25*params.mass, 0.],
+				[0. ,0. , 16.0*params.mass]])
+
+
+def run(quad, des_state):
+
+	x,y,z = quad.position()
+	P_sen = np.array([[x],[y],[z]])
+	x,y,z = quad.velocity()
+	V_sen = np.array([[x],[y],[z]])
+
+	phi, theta, psi = quad.attitude()
+	R_sen = np.array([phi, theta, psi]).T
+	p, q, r = quad.omega()
+
+	#Outer Loop Inverse p_com -> v_nom
+	x,y,z = des_state.pos
+	P_com = np.array([[x],[y],[z]])
+
+	x,y,z = des_state.vel
+	V_nom = np.array([[x],[y],[z]])
+
+	psi_com = des_state.yaw
+
+	#Inner Loop Inverse F_nom = m* a_nom
+	x,y,z = des_state.acc
+	a_nom = np.array([[x],[y],[z]])
+	F_nom = a_nom * params.mass
+
+	P_err = P_com - P_sen
+
+
+	#FeedBack stabilization controller
+
+	#Outer Loop Regulator
+	V_ctrl = K_P1.dot(P_err) + K_I1.dot(P_err * params.dt)
+
+	V_com = V_nom + V_ctrl
+	V_err = V_com - V_sen
+
+	#Inner Loop Regulator
+	F_ctrl = K_P2.dot(V_err) + K_I2.dot(V_err*params.dt)
+	F_com = F_nom + F_ctrl
+
+	T_com = sqrt(F_com[0][0]**2 + F_com[1][0]**2 + (F_com[2][0] + params.mass * params.g)**2)
+
+
+	theta_nom = asin((F_nom[0] * np.cos(psi_com) + F_nom[1] * np.sin(psi_com)) / T_com)
+	phi_nom = atan2((F_nom[0] * np.sin(psi_com) - F_nom[1] * np.cos(psi_com)) , (F_nom[2] + params.mass * params.g))
+
+
+	a1 = cos(theta_nom)*cos(phi_nom)*sin(psi_com)
+	a2 = cos(psi_com)*cos(theta_nom) - sin(theta_nom)*sin(phi_nom)*sin(psi_com)
+	a3 = -cos(theta_nom)*cos(phi_nom)*cos(psi_com)
+	a4 = sin(psi_com)*cos(theta_nom) + sin(theta_nom)*sin(phi_nom)*cos(psi_com)
+	
+	Jacobian_R = np.array([[a1, a2],
+							[a3, a4]])
+
+	inv_Jacobian_R = np.linalg.inv(Jacobian_R)	
+
+	F_xy_ctrl = np.array([[F_ctrl[0][0]],[F_ctrl[1][0]]])
+
+	#phi_ctrl, theta_ctrl
+	angle_ctrl = inv_Jacobian_R.dot(F_xy_ctrl)
+	
+	phi_ctrl = angle_ctrl[0][0]
+	theta_ctrl = angle_ctrl[1][0]
+
+	R_com = np.array([phi_nom + phi_ctrl, theta_nom + theta_ctrl, psi_com]).T
+	R_err = R_com - R_sen
+	R_ctrl = np.array([phi_ctrl, theta_ctrl, 0.0]).T
+	R_nom = R_com - R_ctrl	
+
+	#Attitude Controller
+
+	#angle dot -> angular velocity p, q, r
+	J_omega = np.array([[cos(theta_nom), 0.0, cos(phi_nom)*sin(theta_nom)],
+						[0.0, 1.0, sin(phi_nom)],
+						[sin(theta_nom), 0.0, cos(phi_nom)*cos(theta_nom)]])
+	
+	R_nom_prev = quad.get_R()
+	#should be updated
+	R_nom_dot = (R_nom - R_nom_prev) / params.dt
+
+	omega_nom = J_omega.dot(R_nom_dot)
+
+	omega_nom_prev = quad.get_omega_nom().T
+
+	omega_dot_nom = (omega_nom - omega_nom_prev) / params.dt
+
+
+	omega_hat = np.array([[0, -omega_nom[2], omega_nom[1]],
+							[omega_nom[2], 0, -omega_nom[0]],
+							[-omega_nom[1], omega_nom[0], 0]])
+	
+	torque_nom = params.I.dot(omega_dot_nom.T) + omega_hat.dot(params.I.dot(omega_nom))
+
+
+	omega_ctrl = K_P3.dot(R_err) + K_I3.dot(R_err*params.dt)
+	omega_err = omega_nom - omega_ctrl
+
+	torque_ctrl = K_P4.dot(omega_err) + K_I4.dot(omega_err*params.dt)
+
+
+	#update quadrotor state  R_nom, omega_nom
+	quad.update_omega_nom(omega_nom)
+	quad.update_R_nom(R_nom)
+	
+	torque_com = torque_nom + torque_ctrl
+
+	M = np.array([[torque_com[0],
+				torque_com[1],
+				torque_com[2]]]).T
+	print M	
+	print F_com
+	return T_com, M

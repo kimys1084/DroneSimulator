@@ -4,8 +4,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 from model.quadcopter import Quadcopter
-import controller
-
+import controller3 as controller
+import numpy as np
 NUMTILES = 10
 MAPSIZE =100
 
@@ -63,7 +63,7 @@ def init(initPos, initAttitude, deltaTime, input_trajectory):
 	global quadCopter
 	global ex_time
 	global dt
-
+	a = np.array([[0,0,0]])
 	ex_time =0
 	dt = deltaTime
 	trajectory =  input_trajectory
@@ -80,8 +80,6 @@ def update_state(index):
 		index = len(trajectory)-1		
 		desired_state =  trajectory[index]
 		print "hovering.."
-
-
 	F, M = controller.run(quadCopter, desired_state)
 	quadCopter.update(dt,F,M)
 	
@@ -98,12 +96,25 @@ def draw_quadCopter(index):
 		body_data.append(frame[:,col])
 
 	
+	center = (body_data[0] + body_data[2]) / 2
+	
+	line1 = body_data[1] - center
+	line2 = body_data[2] - center
+	up_vector = normalize(np.cross(line1, line2))*10
+
+
 	glBegin(GL_LINES)
 	glVertex3fv(body_data[0])
 	glVertex3fv(body_data[2])
 
 	glVertex3fv(body_data[1])
 	glVertex3fv(body_data[3])
+	
+	glVertex3fv(center)
+	glVertex3fv(up_vector)
+
+	
+	glColor3f(255,255,255)
 	glEnd()	
 
 def draw_world():
@@ -113,7 +124,7 @@ def draw_world():
 	pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 	gluPerspective(45, (display[0]/display[1]), 0.1, 500.0)
 
-	glTranslatef(-20,-20,-100)
+	glTranslatef(-10,-10,-50)
 	glRotatef(-90,1,0,0)
 	glRotatef(-90,0,0,1)	
 	#trajectory index
@@ -159,6 +170,12 @@ def draw_world():
 		pygame.time.wait(10)
 		if index < len(trajectory):
 			index+=1
+
+def normalize(v):
+	norm = np.linalg.norm(v)
+	if norm == 0:
+		return v
+	return v / norm
 
 if __name__ =="__main__":
 	render()

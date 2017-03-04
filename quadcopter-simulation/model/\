@@ -17,9 +17,7 @@ class Quadcopter:
 		"""
 		self.state = np.zeros(13)
 		self.R_nom = np.zeros(3)
-		self.omega_nom = np.zeros(3)
-		self.acc = np.zeros(3)
-		self.acc[2] = 1
+		self.omega_nom = np.zeros(3) 
 		roll, pitch, yaw = attitude
 		rot    = RPYToRot(roll, pitch, yaw)
 		quat   = RotToQuat(rot)
@@ -46,7 +44,7 @@ class Quadcopter:
 		world_frame = quadWorldFrame[0:3]
 		return world_frame
 
-	def update_R_nom(self, R):
+	def update_R(R):
 		R_nom = R
 
 	def get_R(self):
@@ -55,7 +53,7 @@ class Quadcopter:
 	def get_omega_nom(self):
 		return self.omega_nom
 
-	def update_omega_nom(self, omega):
+	def update_omega_nom(omega):
 		omega_nom = omega
 
 	def position(self):
@@ -70,21 +68,6 @@ class Quadcopter:
     
 	def omega(self):
 		return self.state[10:13]
-
-
-	def acceleration(self):
-		return self.acc
-
-	def calculate_acc(self, state, t, F):
-		x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r = state
-		quat = np.array([qw,qx,qy,qz])
-
-		bRw = Quaternion(quat).as_rotation_matrix() # world to body rotation matrix
-		wRb = bRw.T # orthogonal matrix inverse = transpose
-        # acceleration - Newton's second law of motion
-		accel = 1.0 / params.mass * (wRb.dot(np.array([[0, 0, F]]).T) - np.array([[0, 0, params.mass * params.g]]).T)
-		
-		return accel[0][0], accel[1][0], accel[2][0]
 
 	def state_dot(self, state, t, F, M):
 		x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r = state
@@ -121,7 +104,6 @@ class Quadcopter:
 		state_dot[10] = pqrdot[0]
 		state_dot[11] = pqrdot[1]
 		state_dot[12] = pqrdot[2]
-
 		return state_dot    
 
 	def update(self, dt, F, M):
@@ -134,4 +116,4 @@ class Quadcopter:
 		F = np.sum(prop_thrusts_clamped)
 		M = params.A[1:].dot(prop_thrusts_clamped)
 		self.state = integrate.odeint(self.state_dot, self.state, [0,dt], args = (F, M))[1]
-		self.acc = self.calculate_acc(self.state,dt, F)
+        

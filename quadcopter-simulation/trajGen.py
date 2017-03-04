@@ -146,3 +146,15 @@ def snap_Trajectory(wayPoints, end, dt):
 		trajectory_list.append(DesiredState(pos, vel, acc, yaw, yawdot))
 
 	return trajectory_list
+
+
+def wayPoint():
+	
+	pos = np.array([1,1,10])
+	vel = np.array([0,0,0])
+	acc = np.array([0,0,0])
+	yaw = 0
+	yawdot = 0
+
+	DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
+	return DesiredState

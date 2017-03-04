@@ -1,16 +1,35 @@
 import numpy as np
 
-mass = 0.3 # kg
+
+control_frequency = 200 #hz
+dt = 1.0 / control_frequency
+
 g = 9.81 # m/s/s
+
+
+'''
+#controller 1 drone length 0.1
+mass = 0.3 # kg
+
 I = np.array([(0.00025, 0, 2.55e-6),
               (0, 0.000232, 0),
               (2.55e-6, 0, 0.0003738)]);
+mass = 2.723
+I = np.array([(0.05442735, 0, 0),
+              (0, 0.05741943, 0),
+              (0, 0, 0.08800943)]);
+'''
+#controller 3 ascending technology hummingbird quadrotor
+mass = 0.5 # kg
+I = np.array([(0.25, 0, 2.55e-6),
+              (0, 0.232, 0),
+              (2.55e-6, 0, 0.003738)]);
 
 invI = np.linalg.inv(I)
-arm_length = 0.1 # meter
+arm_length = 0.54 # meter
 height = 0.05
 minF = 0.0
-maxF = 2.0 * mass * g
+maxF = 4.0 * mass * g
 L = arm_length
 H = height
 km = 1.5e-9
