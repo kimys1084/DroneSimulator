@@ -20,6 +20,11 @@ class Quadcopter:
 		self.omega_nom = np.zeros(3)
 		self.acc = np.zeros(3)
 		self.acc[2] = 1
+		# TODO
+		# acc delete
+		self.x_vector = np.array([[0,0,0]]).T
+		self.y_vector = np.array([[0,0,0]]).T
+		self.z_vector = np.array([[0,0,0]]).T
 		roll, pitch, yaw = attitude
 		rot    = RPYToRot(roll, pitch, yaw)
 		quat   = RotToQuat(rot)
@@ -71,6 +76,24 @@ class Quadcopter:
 	def omega(self):
 		return self.state[10:13]
 
+	# for controller 3 debugg not in use
+
+	def store_xyz(self, x,y,z):
+		self.x_vector = x
+		self.y_vector = y
+		self.z_vector = z
+
+	def get_x(self):
+		
+		return [self.x_vector[0][0], self.x_vector[1][0], self.x_vector[2][0]]	
+	def get_y(self):
+		
+		return [self.y_vector[0][0], self.y_vector[1][0], self.y_vector[2][0]]	
+	def get_z(self):
+		
+		return [self.z_vector[0][0], self.z_vector[1][0], self.z_vector[2][0]]	
+
+	#-----------------------------------
 
 	def acceleration(self):
 		return self.acc

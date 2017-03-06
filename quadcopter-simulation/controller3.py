@@ -7,14 +7,18 @@ from math import sin,cos
 # return [F, M] F is total force thrust, M is 3x1 moment matrix
 
 #constants
-k_p = np.array([[100,0,0],
-				[0,100,0],
-				[0,0,100]])
 
-k_v = np.array([[5,0,0],
-				[0,5,0],
-				[0,0,5]])
-v_r= 100
+debug = False
+
+v_p = 1000
+k_p = np.array([[v_p,0,0],
+				[0, v_p,0],
+				[0,0,v_p]])
+v_v = 50
+k_v = np.array([[v_v,0,0],
+				[0,v_v,0],
+				[0,0,v_v]])
+v_r= 30
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
@@ -73,6 +77,9 @@ def run(quad, des_state):
 	F_des = -np.dot(k_p, e_p) - np.dot(k_v, e_v) +gravity + params.mass*des_acc # -k_p*e_p -k_v*e_v +mgZw + ma_des
 	
 	z_b_des = normalize(F_des)
+	#TODO
+	#delete this
+
 	x_c_des = np.array([[cos(des_psi), sin(des_psi), 0]]).T
 	
 	y_b_des = v_cross(z_b_des, x_c_des)
@@ -81,22 +88,26 @@ def run(quad, des_state):
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
 
-	e_R_matrix = 0.5 * (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
+	#quad.store_xyz(x_b_des, y_b_des, z_b_des)	
+	quad.store_xyz(x_b, y_b, z_b)	
+	#print R_des
+	#print ""
+	e_R_matrix = (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
 
-	e_R = vee_map(e_R_matrix)
+	e_R = 0.5* vee_map(e_R_matrix)
 	
 	
 	w_des = np.array([[0,0,0]]).T
 	e_w = w_b - w_des
 	
-	M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
+	M = -np.dot(k_r,e_R) #- np.dot(k_w,e_w)
 	#M = np.array([[0,0,0]]).T
 	F = np.dot(F_des.T, z_b)[0][0]
-	print "z_b : ", z_b
-	#print "F : " ,F
-	print "M :", M
-	print ""
-	#a = input()
+
+	if debug == True:
+		#print "F : " ,F
+		print "M :", M
+		print ""
 	return F, M
 	
 

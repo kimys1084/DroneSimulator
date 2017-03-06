@@ -1,8 +1,6 @@
 import render as r
-import quadPlot as plt
 import controller
 import trajGen
-import scheduler
 import model.params as params
 from model.quadcopter import Quadcopter
 import numpy as np
@@ -15,7 +13,7 @@ time = [0.0]
 #wayPoints = [[0,0,0], [0,10,20.0]]
 #wayPoints = [[0,0,0], [0,0,1.0]]
 #wayPoints = [[0.0,0.0,0.0], [10.0,10.0,10.0], [10.0,10.0,5.0], [10.0,5.0,10.0], [10.0,10.0,7.0],[10.0,10.0,20]]
-wayPoints = [[0,0,0],[0,0,5]]
+wayPoints = [[0,0,0],[0.1,0,5]]
 totalTime = 5.0
 
 def attitudeControl(quad, time):
@@ -34,10 +32,6 @@ def main():
 	#generate trajectory
 	trajectory = trajGen.snap_Trajectory(wayPoints, totalTime, dt)
 	r.init(pos, attitude, dt, trajectory)
-	#sched = scheduler.Scheduler()
-	#sched.add_task(attitudeControl, dt, (quadcopter,time))
-	#kEvent_Render = sched.add_event(render, (quadcopter,))
-	#plt.plot_quad_3d((sched, kEvent_Render))
 	r.draw_world()
 	
 

@@ -9,6 +9,7 @@ import numpy as np
 NUMTILES = 10
 MAPSIZE =100
 
+
 def DrawMap():
 
 	glColor3f(255,255,255)
@@ -63,7 +64,6 @@ def init(initPos, initAttitude, deltaTime, input_trajectory):
 	global quadCopter
 	global ex_time
 	global dt
-	a = np.array([[0,0,0]])
 	ex_time =0
 	dt = deltaTime
 	trajectory =  input_trajectory
@@ -87,10 +87,13 @@ def update_state(index):
 
 #draw quadcopter
 def draw_quadCopter(index):
-	
-	update_state(index)
-	frame = quadCopter.world_frame()
 
+	if play == True:	
+		update_state(index)
+	frame = quadCopter.world_frame()
+	z_des = quadCopter.get_z()
+	y_des = quadCopter.get_y()
+	x_des = quadCopter.get_x()
 	body_data = []
 	for col in range(0,4):
 		body_data.append(frame[:,col])
@@ -98,9 +101,9 @@ def draw_quadCopter(index):
 	
 	center = (body_data[0] + body_data[2]) / 2
 	
-	line1 = body_data[1] - center
-	line2 = body_data[2] - center
-	up_vector = normalize(np.cross(line1, line2))*10
+	line1 = (body_data[1] - center) *2
+	line2 = (body_data[2] - center) *2
+	up_vector = normalize(np.cross(line1, line2))*2
 
 
 	glBegin(GL_LINES)
@@ -109,10 +112,36 @@ def draw_quadCopter(index):
 
 	glVertex3fv(body_data[1])
 	glVertex3fv(body_data[3])
+
+	
+	#for debug
+	#draw body coordinate
+	glColor3f(255,0,0)
+
+	glVertex3fv(center)
+	glVertex3fv(line1+center)
+
+	glColor3f(0,255,0)
+	glVertex3fv(center)
+	glVertex3fv(line2+center)
+
+	glColor3f(0,0,255)
+	glVertex3fv(center)
+	glVertex3fv(up_vector+center)
+	
+	#desired force vector
+	glColor3f(0,100,255)	
+	glVertex3fv(center)
+	glVertex3fv(center + z_des)
+
+	glVertex3fv(center)
+	glVertex3fv(center + y_des)
 	
 	glVertex3fv(center)
-	glVertex3fv(up_vector)
+	glVertex3fv(center + x_des)
 
+	t_b = np.cross(z_des, up_vector)
+	print t_b
 	
 	glColor3f(255,255,255)
 	glEnd()	
@@ -120,7 +149,8 @@ def draw_quadCopter(index):
 def draw_world():
 	pygame.init()
 	display = (1600,1200)
-	
+	global play
+	play = True
 	pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 	gluPerspective(45, (display[0]/display[1]), 0.1, 500.0)
 
@@ -149,6 +179,14 @@ def draw_world():
 				 
 				if event.key == pygame.K_DOWN:
 					glTranslatef(0, 0, 1)
+				#pause
+				if event.key == pygame.K_s:
+					print "simulation stop"
+					play = False
+				if event.key == pygame.K_p:
+					print "simulation play"
+					play = True
+					
 			
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				
@@ -158,18 +196,15 @@ def draw_world():
 				if event.button == 5:
 					glTranslatef(-3, 0, -0.0)
 
-					
-		
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-		#Cube()
 		DrawMap()
 		draw_quadCopter(index)
 		draw_trajectory()
 		pygame.display.flip()
 		pygame.time.wait(10)
 		if index < len(trajectory):
-			index+=1
+			if play == True:
+				index+=1
 
 def normalize(v):
 	norm = np.linalg.norm(v)

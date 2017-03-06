@@ -15,8 +15,4 @@ Future Work
 
 * Kalman filter based sensor fusion: height estimation by accelerometer and barometer.
 
-Contribution
------
-Any contribution are welcome if you are interested in the project, but please let me know.
-
 
