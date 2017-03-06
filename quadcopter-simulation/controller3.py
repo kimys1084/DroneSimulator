@@ -14,11 +14,11 @@ v_p = 100
 k_p = np.array([[v_p,0,0],
 				[0, v_p,0],
 				[0,0,v_p]])
-v_v = 5
+v_v = 2
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r= 0.1
+v_r= 0.01
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
@@ -111,8 +111,8 @@ def run(quad, des_state):
 		print "w_R_b", w_R_b
 		print ""
 		print e_R_matrix
-		#print "F : " ,F
-		#print "M :", M
+		print "F : " ,F
+		print "M :", M
 		print ""
 	return F, M
 	

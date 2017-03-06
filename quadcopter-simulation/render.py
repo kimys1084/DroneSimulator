@@ -193,7 +193,7 @@ def draw_world():
 				if event.key == pygame.K_s:
 					print "simulation stop"
 					play = False
-				if event.key == pygame.K_p:
+				if event.key == pygame.K_d:
 					print "simulation play"
 					play = True
 					
