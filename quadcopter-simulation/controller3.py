@@ -8,17 +8,17 @@ from math import sin,cos
 
 #constants
 
-debug = False
+debug = True
 
-v_p = 1000
+v_p = 100
 k_p = np.array([[v_p,0,0],
 				[0, v_p,0],
 				[0,0,v_p]])
-v_v = 50
+v_v = 5
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r= 30
+v_r= 0.1
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
@@ -59,10 +59,13 @@ def run(quad, des_state):
 	line2 = body_data[2] - center
 	up_vector = normalize(np.cross(line1, line2))
 	z_b = np.array([up_vector]).T
-
+	'''
 	y_b = v_cross(z_b, x_c)
 	y_b = normalize(y_b)
 	x_b = v_cross(y_b,z_b)
+	'''
+	x_b = normalize(-np.array([line2]).T)
+	y_b = normalize(np.array([line1]).T)
 	w_R_b = make_R(x_b, y_b, z_b)
 	
 
@@ -84,16 +87,14 @@ def run(quad, des_state):
 	
 	y_b_des = v_cross(z_b_des, x_c_des)
 	y_b_des = normalize(y_b_des)
-	x_b_des = v_cross(y_b_des, z_b_des)
+	x_b_des = v_cross(z_b_des, y_b_des)
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
 
-	#quad.store_xyz(x_b_des, y_b_des, z_b_des)	
-	quad.store_xyz(x_b, y_b, z_b)	
-	#print R_des
+	quad.store_xyz(x_b_des, y_b_des, z_b_des)	
+	#quad.store_xyz(x_b, y_b, z_b)	
 	#print ""
 	e_R_matrix = (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
-
 	e_R = 0.5* vee_map(e_R_matrix)
 	
 	
@@ -105,8 +106,13 @@ def run(quad, des_state):
 	F = np.dot(F_des.T, z_b)[0][0]
 
 	if debug == True:
+		print "R_des", R_des
+		print ""
+		print "w_R_b", w_R_b
+		print ""
+		print e_R_matrix
 		#print "F : " ,F
-		print "M :", M
+		#print "M :", M
 		print ""
 	return F, M
 	

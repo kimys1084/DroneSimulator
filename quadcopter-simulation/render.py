@@ -90,6 +90,11 @@ def draw_quadCopter(index):
 
 	if play == True:	
 		update_state(index)
+
+	if index >= len(trajectory)-1:
+		index = len(trajectory)-1
+		
+	cur_pos = trajectory[index].pos
 	frame = quadCopter.world_frame()
 	z_des = quadCopter.get_z()
 	y_des = quadCopter.get_y()
@@ -105,6 +110,11 @@ def draw_quadCopter(index):
 	line2 = (body_data[2] - center) *2
 	up_vector = normalize(np.cross(line1, line2))*2
 
+	glBegin(GL_POINTS)
+	glColor3f(255,125,0)
+	glVertex3fv(cur_pos)
+	glEnd()
+	glColor3f(255,255,255)
 
 	glBegin(GL_LINES)
 	glVertex3fv(body_data[0])
@@ -113,6 +123,7 @@ def draw_quadCopter(index):
 	glVertex3fv(body_data[1])
 	glVertex3fv(body_data[3])
 
+	
 	
 	#for debug
 	#draw body coordinate
@@ -130,18 +141,17 @@ def draw_quadCopter(index):
 	glVertex3fv(up_vector+center)
 	
 	#desired force vector
-	glColor3f(0,100,255)	
+	glColor3f(50,255,100)	
 	glVertex3fv(center)
 	glVertex3fv(center + z_des)
 
+	glColor3f(0,100,255)	
 	glVertex3fv(center)
 	glVertex3fv(center + y_des)
 	
 	glVertex3fv(center)
 	glVertex3fv(center + x_des)
-
-	t_b = np.cross(z_des, up_vector)
-	print t_b
+	
 	
 	glColor3f(255,255,255)
 	glEnd()	
