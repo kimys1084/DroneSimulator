@@ -1,15 +1,19 @@
-import pygame
-from pygame.locals import *
+#import pygame
+#from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+from OpenGL.GLUT import *
 
 from model.quadcopter import Quadcopter
 import controller3 as controller
 import numpy as np
 NUMTILES = 10
 MAPSIZE =100
-
-
+width = 1600
+height = 1200
+play = True
+index = 0
+delay = 100
 def DrawMap():
 
 	glColor3f(255,255,255)
@@ -87,7 +91,7 @@ def update_state(index):
 
 #draw quadcopter
 def draw_quadCopter(index):
-
+	global play
 	if play == True:	
 		update_state(index)
 
@@ -155,7 +159,7 @@ def draw_quadCopter(index):
 	
 	glColor3f(255,255,255)
 	glEnd()	
-
+	'''
 def draw_world():
 	pygame.init()
 	display = (1600,1200)
@@ -215,6 +219,118 @@ def draw_world():
 		if index < len(trajectory):
 			if play == True:
 				index+=1
+	'''
+
+def draw_world():
+
+
+	global play
+	global index
+	initializeWindow()
+	initializeSetting()
+	prepareCamera()
+	glutMainLoop()
+	
+
+def reshape(new_width, new_height):
+	global width, height
+	width, height = new_width, new_height
+	glViewport(0, 0, width, height)
+
+def normalize_xy(x,y):
+	x,y = x / float(width), (height - y) / float(height)
+	return 2.0 * x - 1.0, 2.0 * y - 1.0
+
+
+def keyboard(ch, x, y):
+	global play
+	if ch == chr(27): #esc
+		sys.exit(0)
+
+	elif ch == chr(111): # 'o'
+		print "simulation stop"
+		play = False
+	
+	elif ch == chr(112): # 'p'
+		print "simulation start"
+		play = True
+
+	else:
+		x,y = normalize_xy(x,y)
+		camera.keyboard(ch, x,y)
+
+def mouse(button, state, x, y):
+	x,y = normalize_xy(x,y)
+	camera.mouse(button, state, x,y)
+
+def motion(x,y):
+	x, y = normalize_xy(x, y)
+	camera.motion(x,y)
+def display():
+
+	global index
+	camera.update()
+	if camera.is_animating():
+		glClearColor(0.5,0.5,0.5,0.0)
+	else:
+		glClearColor(0.0,0.0,0.0,0.0)
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+	glMatrixMode(GL_MODELVIEW)
+
+
+	#------------------DRAW AND UPDATE-----------
+	DrawMap()
+	draw_trajectory()
+	draw_quadCopter(index)
+
+	if index < len(trajectory):
+		if play == True:
+			index+=1
+
+	#--------------------------------------------
+	glutSwapBuffers()
+
+	# --> maybe have to put this : pygame.time.wait(10)
+
+def initializeWindow():
+	glutInit(['viewer'])
+	glutInitWindowPosition(100,100)
+	glutInitWindowSize(width, height)
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
+	glutCreateWindow('Quadrotor simultar by YS')
+	
+	glutReshapeFunc(reshape)
+	glutDisplayFunc(display)
+	glutKeyboardFunc(keyboard)
+	glutMouseFunc(mouse)
+	glutMotionFunc(motion)
+	glutTimerFunc(delay, on_timer, 0)
+
+def initializeSetting():
+	glClearDepth(1.0)
+	glClearColor(0.0, 0.0, 0.0, 0.0)
+	
+	glEnable(GL_DEPTH_TEST)
+	glEnable(GL_LIGHTING)
+	glEnable(GL_LIGHT0)
+	glEnable(GL_NORMALIZE)
+	glEnable(GL_COLOR_MATERIAL)
+
+	glLightfv(GL_LIGHT0, GL_POSITION, (1.0, 1.0, 1.0, 1.0))
+
+def prepareCamera():
+	import camera
+
+	global camera
+	global delay
+	camera = camera.Camera() # << MODEL???
+	#camera.adjust_to_model()
+	camera.see()
+def on_timer(value):
+	glutPostRedisplay()
+	glutTimerFunc(delay, on_timer, 0)
 
 def normalize(v):
 	norm = np.linalg.norm(v)

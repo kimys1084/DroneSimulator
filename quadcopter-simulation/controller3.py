@@ -8,7 +8,7 @@ from math import sin,cos
 
 #constants
 
-debug = True
+debug = False
 
 v_p = 100
 k_p = np.array([[v_p,0,0],
