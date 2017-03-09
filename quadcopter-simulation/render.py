@@ -228,6 +228,7 @@ def draw_world():
 	global index
 	initializeWindow()
 	initializeSetting()
+	printManual()
 	prepareCamera()
 	glutMainLoop()
 	
@@ -244,6 +245,7 @@ def normalize_xy(x,y):
 
 def keyboard(ch, x, y):
 	global play
+	global delay
 	if ch == chr(27): #esc
 		sys.exit(0)
 
@@ -254,10 +256,27 @@ def keyboard(ch, x, y):
 	elif ch == chr(112): # 'p'
 		print "simulation start"
 		play = True
+	elif ch == chr(109): # 'm' print manual
+		printManual()
+	elif ch ==  chr(110): # 'n' modify delay
+		print "Input delay"
+		delay = input()
 
 	else:
 		x,y = normalize_xy(x,y)
 		camera.keyboard(ch, x,y)
+def printManual():
+	print "----------quadrotor simulator by YS KIM----------"
+	print ""
+	print "o : simulation stop"
+	print "p : simulation play"
+	print "---- camera control------------------------------"
+	print "w : dolly in"
+	print "s : dolly out"
+	print "d : zoom in"
+	print "a : zoom out"
+	print "SHIFT + DRAG : translate camera"
+	print "DRAG : rotate camera"
 
 def mouse(button, state, x, y):
 	x,y = normalize_xy(x,y)

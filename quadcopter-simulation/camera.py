@@ -301,7 +301,7 @@ class Camera:
     if self.is_animating():
       return
 
-    if ch == 'w':
+    elif ch == 'w':
       self.dolly(IN)
     elif ch == 's':
       self.dolly(OUT)
