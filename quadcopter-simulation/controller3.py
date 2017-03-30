@@ -9,8 +9,9 @@ from math import sin,cos
 #constants
 
 debug = False
+#debug = True
 
-v_p = 100
+v_p = 1000
 k_p = np.array([[v_p,0,0],
 				[0, v_p,0],
 				[0,0,v_p]])
@@ -18,12 +19,12 @@ v_v = 2
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r= 0.01
+v_r=0.003
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
 
-v_w = 5
+v_w = 1
 k_w = np.array([[v_w,0,0],
 				[0,v_w,0],
 				[0,0,v_w]])
@@ -64,8 +65,10 @@ def run(quad, des_state):
 	y_b = normalize(y_b)
 	x_b = v_cross(y_b,z_b)
 	'''
-	x_b = normalize(-np.array([line2]).T)
-	y_b = normalize(np.array([line1]).T)
+	#x_b = normalize(-np.array([line2]).T)
+	#y_b = normalize(np.array([line1]).T)
+	y_b = normalize(v_cross(z_b, x_c))
+	x_b = normalize(v_cross(y_b, z_b))
 	w_R_b = make_R(x_b, y_b, z_b)
 	
 
@@ -87,24 +90,40 @@ def run(quad, des_state):
 	
 	y_b_des = v_cross(z_b_des, x_c_des)
 	y_b_des = normalize(y_b_des)
-	x_b_des = v_cross(z_b_des, y_b_des)
+	x_b_des = v_cross(y_b_des, z_b_des)
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
 
-	quad.store_xyz(x_b_des, y_b_des, z_b_des)	
-	#quad.store_xyz(x_b, y_b, z_b)	
+	#quad.store_xyz(x_b_des, y_b_des, z_b_des)	
+	quad.store_xyz(x_b, z_b_des, z_b)	
 	#print ""
 	e_R_matrix = (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
 	e_R = 0.5* vee_map(e_R_matrix)
 	
-	
 	w_des = np.array([[0,0,0]]).T
 	e_w = w_b - w_des
-	
 	M = -np.dot(k_r,e_R) #- np.dot(k_w,e_w)
-	#M = np.array([[0,0,0]]).T
-	F = np.dot(F_des.T, z_b)[0][0]
 
+	'''
+	if int(quad.get_index()) == 1: #yaw +
+		M = np.array([[0,0,10]]).T
+		quad.set_index(5)
+	elif int(quad.get_index()) == 2: #yaw -
+		M = np.array([[0,0,-10]]).T
+		quad.set_index(5)
+	elif int(quad.get_index()) == 3: #roll +
+		M = np.array([[1,0,0]]).T
+		quad.set_index(5)
+	elif int(quad.get_index()) == 4: #roll +
+		M = np.array([[-1,0,0]]).T
+		quad.set_index(5)
+	else:							 #default
+		M = np.array([[0,0,0]]).T
+	'''
+
+	F = np.dot(F_des.T, z_b)[0][0]
+	print "before F: ", F
+	print "before M: ", M
 	if debug == True:
 		print "R_des", R_des
 		print ""

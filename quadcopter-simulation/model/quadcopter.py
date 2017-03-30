@@ -13,15 +13,13 @@ class Quadcopter:
 	params - system parameters struct, arm_length, g, mass, etc.
 	"""
 	def __init__(self, pos, attitude):
-		""" pos = [x,y,z] attitude = [rool,pitch,yaw]
+		""" pos = [x,y,z] attitude = [roll,pitch,yaw]
 		"""
 		self.state = np.zeros(13)
 		self.R_nom = np.zeros(3)
 		self.omega_nom = np.zeros(3)
 		self.acc = np.zeros(3)
-		self.acc[2] = 1
-		# TODO
-		# acc delete
+		self.index = 0
 		self.x_vector = np.array([[0,0,0]]).T
 		self.y_vector = np.array([[0,0,0]]).T
 		self.z_vector = np.array([[0,0,0]]).T
@@ -35,6 +33,11 @@ class Quadcopter:
 		self.state[7] = quat[1]
 		self.state[8] = quat[2]
 		self.state[9] = quat[3]
+
+	def get_index(self):
+		return self.index
+	def set_index(self, command):
+		self.index = command
 
 	def world_frame(self):
 		""" position returns a 3x6 matrix
@@ -156,5 +159,7 @@ class Quadcopter:
 		prop_thrusts_clamped = np.maximum(np.minimum(prop_thrusts, params.maxF/4), params.minF/4)
 		F = np.sum(prop_thrusts_clamped)
 		M = params.A[1:].dot(prop_thrusts_clamped)
+		print "after F : ", F
+		print "after M : ", M
 		self.state = integrate.odeint(self.state_dot, self.state, [0,dt], args = (F, M))[1]
 		self.acc = self.calculate_acc(self.state,dt, F)

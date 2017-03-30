@@ -1,11 +1,11 @@
-#import pygame
+import pygame
 #from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from model.quadcopter import Quadcopter
-import controller3 as controller
+import controller as controller
 import numpy as np
 NUMTILES = 10
 MAPSIZE =100
@@ -107,8 +107,13 @@ def draw_quadCopter(index):
 	for col in range(0,4):
 		body_data.append(frame[:,col])
 
+
+	acc = quadCopter.acceleration()
+	acc = normalize(acc)
 	
 	center = (body_data[0] + body_data[2]) / 2
+
+	
 	
 	line1 = (body_data[1] - center) *2
 	line2 = (body_data[2] - center) *2
@@ -127,99 +132,28 @@ def draw_quadCopter(index):
 	glVertex3fv(body_data[1])
 	glVertex3fv(body_data[3])
 
-	
+
 	
 	#for debug
-	#draw body coordinate
-	glColor3f(255,0,0)
-
-	glVertex3fv(center)
-	glVertex3fv(line1+center)
+	
+	#desired force vector
 
 	glColor3f(0,255,0)
 	glVertex3fv(center)
-	glVertex3fv(line2+center)
-
+	glVertex3fv(center + acc)
+	
 	glColor3f(0,0,255)
 	glVertex3fv(center)
-	glVertex3fv(up_vector+center)
-	
-	#desired force vector
-	glColor3f(50,255,100)	
-	glVertex3fv(center)
 	glVertex3fv(center + z_des)
-
-	glColor3f(0,100,255)	
+	
+	glColor3f(0,255,255)
 	glVertex3fv(center)
 	glVertex3fv(center + y_des)
-	
-	glVertex3fv(center)
-	glVertex3fv(center + x_des)
-	
+		
 	
 	glColor3f(255,255,255)
+
 	glEnd()	
-	'''
-def draw_world():
-	pygame.init()
-	display = (1600,1200)
-	global play
-	play = True
-	pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
-	gluPerspective(45, (display[0]/display[1]), 0.1, 500.0)
-
-	glTranslatef(-10,-10,-50)
-	glRotatef(-90,1,0,0)
-	glRotatef(-90,0,0,1)	
-	#trajectory index
-	index = 0
-
-	while True:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				quit()
-			
-			if event.type == pygame.KEYDOWN:
-				
-				if event.key == pygame.K_LEFT:
-					glTranslatef(0, 1, 0)
-				
-				if event.key == pygame.K_RIGHT:
-					glTranslatef(0, -1, 0)
-
-				if event.key == pygame.K_UP:
-					glTranslatef(0, 0, -1)
-				 
-				if event.key == pygame.K_DOWN:
-					glTranslatef(0, 0, 1)
-				#pause
-				if event.key == pygame.K_s:
-					print "simulation stop"
-					play = False
-				if event.key == pygame.K_d:
-					print "simulation play"
-					play = True
-					
-			
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				
-				if event.button ==4:
-					glTranslatef(3, 0, 0.0)
-	
-				if event.button == 5:
-					glTranslatef(-3, 0, -0.0)
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-		DrawMap()
-		draw_quadCopter(index)
-		draw_trajectory()
-		pygame.display.flip()
-		pygame.time.wait(10)
-		if index < len(trajectory):
-			if play == True:
-				index+=1
-	'''
 
 def draw_world():
 
@@ -246,6 +180,7 @@ def normalize_xy(x,y):
 def keyboard(ch, x, y):
 	global play
 	global delay
+	global quadCopter
 	if ch == chr(27): #esc
 		sys.exit(0)
 
@@ -258,9 +193,29 @@ def keyboard(ch, x, y):
 		play = True
 	elif ch == chr(109): # 'm' print manual
 		printManual()
-	elif ch ==  chr(110): # 'n' modify delay
-		print "Input delay"
-		delay = input()
+	elif ch ==  chr(110): # 'n' increase delay
+		delay += 10
+		print "Increase delay : ", delay
+	elif ch == chr(98): # 'b' decrease delay
+		if delay <= 10:
+			print "delay : ", delay
+		else:
+			delay -= 10
+			print "Decrease delay :", delay
+
+	#------------------drone command-------
+	elif ch == chr(116): # 't' yaw +
+		quadCopter.set_index(1)	
+		
+	elif ch == chr(103): # 'g' yaw -
+		quadCopter.set_index(2)	
+
+	elif ch == chr(104): # 'h' roll +
+		quadCopter.set_index(3)	
+
+	elif ch == chr(102): # 'f' roll -
+		quadCopter.set_index(4)	
+
 
 	else:
 		x,y = normalize_xy(x,y)
@@ -275,6 +230,9 @@ def printManual():
 	print "s : dolly out"
 	print "d : zoom in"
 	print "a : zoom out"
+	print "m : print manual"
+	print "n : Increase delaay"
+	print "b : Decrease delay"
 	print "SHIFT + DRAG : translate camera"
 	print "DRAG : rotate camera"
 

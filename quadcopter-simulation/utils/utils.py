@@ -10,6 +10,7 @@ def RotToRPY(R):
 def RPYToRot(phi, theta, psi):
     """
     phi, theta, psi = roll, pitch , yaw
+	Z-X-Y
     """
     return np.array([[cos(psi)*cos(theta) - sin(phi)*sin(psi)*sin(theta), cos(theta)*sin(psi) + cos(psi)*sin(phi)*sin(theta), -cos(phi)*sin(theta)],
                      [-cos(phi)*sin(psi), cos(phi)*cos(psi), sin(phi)],

@@ -1,5 +1,5 @@
 import render as r
-import controller
+import controller3 as controller
 import trajGen
 import model.params as params
 from model.quadcopter import Quadcopter
@@ -12,9 +12,9 @@ time = [0.0]
 #wayPoints = [[0.0,0.0,0.0], [0.0,5.0,10.0], [5.0,5.0,10.0], [10.0,5.0,15.0], [10.0,10.0,25.0],[10.0,10.0,40]]
 #wayPoints = [[0,0,0], [0,10,20.0]]
 #wayPoints = [[0,0,0], [0,0,1.0]]
-wayPoints = [[0.0,0.0,0.0], [10.0,10.0,10.0], [10.0,10.0,5.0], [10.0,5.0,10.0], [10.0,10.0,7.0],[10.0,10.0,20]]
-#wayPoints = [[0,0,0],[0,-0.2,5]]
-totalTime = 5.0
+#wayPoints = [[0.0,0.0,0.0], [10.0,10.0,10.0], [10.0,10.0,5.0], [10.0,5.0,10.0], [10.0,10.0,7.0],[10.0,10.0,20]]
+wayPoints = [[0,0,0],[1,0,0]]#,[3,0,5]]
+totalTime = 1.0
 
 def attitudeControl(quad, time):
 	

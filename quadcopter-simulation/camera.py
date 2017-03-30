@@ -49,7 +49,7 @@ class Camera:
     self.theta = 60.0
     self.aspect = 1.0
     self.near = 3.0
-    self.far = 30.0
+    self.far = 200.0
     self.radius = 7.0 # of virtual trackball
     self.speed = 1.0 # of dolly in/out
     #self.model = model

@@ -49,7 +49,7 @@ def run(quad, des_state):
 					k_p_theta * (des_theta - theta) + k_d_theta * (q_des - q),
 					k_p_psi * (des_psi - psi) + k_d_psi * (r_des - r)]]).T
 	
-	print(quad.position().T)
-	print(des_state.pos)
+	#print(quad.position().T)
+	#print(des_state.pos)
 	return F, M
 
