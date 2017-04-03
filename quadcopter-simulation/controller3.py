@@ -15,16 +15,16 @@ v_p = 1000
 k_p = np.array([[v_p,0,0],
 				[0, v_p,0],
 				[0,0,v_p]])
-v_v = 2
+v_v = 20
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r=0.003
+v_r= 3
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
 
-v_w = 1
+v_w =2
 k_w = np.array([[v_w,0,0],
 				[0,v_w,0],
 				[0,0,v_w]])
@@ -70,7 +70,7 @@ def run(quad, des_state):
 	y_b = normalize(v_cross(z_b, x_c))
 	x_b = normalize(v_cross(y_b, z_b))
 	w_R_b = make_R(x_b, y_b, z_b)
-	
+ 	W_R_b = quad.rotation()
 
 	des_psi = des_state.yaw
 	des_psi_dot = des_state.yawdot
@@ -93,7 +93,7 @@ def run(quad, des_state):
 	x_b_des = v_cross(y_b_des, z_b_des)
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
-
+	#R_des = np.array([[1,0,0],[0,1,0],[0,0,1]])
 	#quad.store_xyz(x_b_des, y_b_des, z_b_des)	
 	quad.store_xyz(x_b, z_b_des, z_b)	
 	#print ""
@@ -102,9 +102,8 @@ def run(quad, des_state):
 	
 	w_des = np.array([[0,0,0]]).T
 	e_w = w_b - w_des
-	M = -np.dot(k_r,e_R) #- np.dot(k_w,e_w)
 
-	'''
+	'''	
 	if int(quad.get_index()) == 1: #yaw +
 		M = np.array([[0,0,10]]).T
 		quad.set_index(5)
@@ -118,12 +117,12 @@ def run(quad, des_state):
 		M = np.array([[-1,0,0]]).T
 		quad.set_index(5)
 	else:							 #default
-		M = np.array([[0,0,0]]).T
+		#M = np.array([[0,0,0]]).T
+		M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
 	'''
 
+	M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
 	F = np.dot(F_des.T, z_b)[0][0]
-	print "before F: ", F
-	print "before M: ", M
 	if debug == True:
 		print "R_des", R_des
 		print ""

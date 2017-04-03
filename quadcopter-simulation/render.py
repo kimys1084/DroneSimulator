@@ -5,7 +5,7 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from model.quadcopter import Quadcopter
-import controller as controller
+import controller3 as controller
 import numpy as np
 NUMTILES = 10
 MAPSIZE =100

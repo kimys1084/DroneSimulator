@@ -75,7 +75,9 @@ class Quadcopter:
 	def attitude(self):
 		rot = Quaternion(self.state[6:10]).as_rotation_matrix()
 		return RotToRPY(rot)
-    
+   	def rotation(self):
+		return Quaternion(self.state[6:10]).as_rotation_matrix()
+ 
 	def omega(self):
 		return self.state[10:13]
 
@@ -106,7 +108,7 @@ class Quadcopter:
 		quat = np.array([qw,qx,qy,qz])
 
 		bRw = Quaternion(quat).as_rotation_matrix() # world to body rotation matrix
-		wRb = bRw.T # orthogonal matrix inverse = transpose
+		wRb = bRw # orthogonal matrix inverse = transpose
         # acceleration - Newton's second law of motion
 		accel = 1.0 / params.mass * (wRb.dot(np.array([[0, 0, F]]).T) - np.array([[0, 0, params.mass * params.g]]).T)
 		
@@ -117,7 +119,7 @@ class Quadcopter:
 		quat = np.array([qw,qx,qy,qz])
 
 		bRw = Quaternion(quat).as_rotation_matrix() # world to body rotation matrix
-		wRb = bRw.T # orthogonal matrix inverse = transpose
+		wRb = bRw # orthogonal matrix inverse = transpose
         # acceleration - Newton's second law of motion
 		accel = 1.0 / params.mass * (wRb.dot(np.array([[0, 0, F]]).T) - np.array([[0, 0, params.mass * params.g]]).T)
         # angular velocity - using quternion
