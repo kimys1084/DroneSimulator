@@ -1,1 +1,2 @@
+clear
 python runsim.py

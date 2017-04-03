@@ -11,23 +11,25 @@ from math import sin,cos
 debug = False
 #debug = True
 
-v_p = 1000
+v_p = 100
 k_p = np.array([[v_p,0,0],
 				[0, v_p,0],
 				[0,0,v_p]])
-v_v = 20
+v_v = 2
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r= 3
+v_r= 10
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
 
-v_w =2
+v_w =0.3
 k_w = np.array([[v_w,0,0],
 				[0,v_w,0],
 				[0,0,v_w]])
+
+hovering = False
 
 def run(quad, des_state):
 	x,y,z = quad.position()
@@ -100,7 +102,7 @@ def run(quad, des_state):
 	e_R_matrix = (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
 	e_R = 0.5* vee_map(e_R_matrix)
 	
-	w_des = np.array([[0,0,0]]).T
+	w_des = np.array([quad.get_pqr(params.dt, R_des)]).T
 	e_w = w_b - w_des
 
 	'''	

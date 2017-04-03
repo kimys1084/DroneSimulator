@@ -1,7 +1,7 @@
 import numpy as np
 
 
-control_frequency = 400 #hz
+control_frequency = 200 #hz
 dt = 1.0 / control_frequency
 
 g = 9.81 # m/s/s

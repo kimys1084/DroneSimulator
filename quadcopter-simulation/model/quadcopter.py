@@ -19,6 +19,9 @@ class Quadcopter:
 		self.R_nom = np.zeros(3)
 		self.omega_nom = np.zeros(3)
 		self.acc = np.zeros(3)
+		self.des_angular_vel = np.zeros(3)
+		self.des_rpy = np.zeros(3)
+
 		self.index = 0
 		self.x_vector = np.array([[0,0,0]]).T
 		self.y_vector = np.array([[0,0,0]]).T
@@ -54,17 +57,6 @@ class Quadcopter:
 		world_frame = quadWorldFrame[0:3]
 		return world_frame
 
-	def update_R_nom(self, R):
-		R_nom = R
-
-	def get_R(self):
-		return self.R_nom
-
-	def get_omega_nom(self):
-		return self.omega_nom
-
-	def update_omega_nom(self, omega):
-		omega_nom = omega
 
 	def position(self):
 		return self.state[0:3]
@@ -107,13 +99,22 @@ class Quadcopter:
 		x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r = state
 		quat = np.array([qw,qx,qy,qz])
 
-		bRw = Quaternion(quat).as_rotation_matrix() # world to body rotation matrix
-		wRb = bRw # orthogonal matrix inverse = transpose
+		wRb = Quaternion(quat).as_rotation_matrix() # world to body rotation matrix
         # acceleration - Newton's second law of motion
 		accel = 1.0 / params.mass * (wRb.dot(np.array([[0, 0, F]]).T) - np.array([[0, 0, params.mass * params.g]]).T)
 		
 		return accel[0][0], accel[1][0], accel[2][0]
 
+	def get_pqr(self, dt, Rot):
+		
+		phi, theta, psi = RotToRPY(Rot)
+		cur_rpy = np.array([phi, theta, psi])
+		self.des_angular_vel = (cur_rpy - self.des_rpy)/ dt
+
+		self.des_rpy = cur_rpy
+		
+		return self.des_angular_vel
+        
 	def state_dot(self, state, t, F, M):
 		x, y, z, xdot, ydot, zdot, qw, qx, qy, qz, p, q, r = state
 		quat = np.array([qw,qx,qy,qz])
