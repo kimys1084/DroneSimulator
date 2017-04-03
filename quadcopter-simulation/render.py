@@ -76,7 +76,6 @@ def init(initPos, initAttitude, deltaTime, input_trajectory):
 #update quadcopter state
 def update_state(index):
 
-
 	if index < len(trajectory):
 		desired_state = trajectory[index]
 	else:
