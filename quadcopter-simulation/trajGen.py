@@ -142,8 +142,14 @@ def snap_Trajectory(wayPoints, end, dt):
 		yaw = 0
 		yawdot = 0
 		time +=dt
-		DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
-		trajectory_list.append(DesiredState(pos, vel, acc, yaw, yawdot))
+		pos = np.array([0,0,0.1])
+		vel = np.array([0,0,0])
+		acc = np.array([0,0,0])
+		attitude = np.array([0,0,3])
+		omega = np.array([0,0,0])
+		
+		DesiredState = namedtuple('DesiredState', 'pos vel acc attitude omega yaw yawdot')
+		trajectory_list.append(DesiredState(pos, vel, acc, attitude, omega, yaw, yawdot))
 
 	return trajectory_list
 

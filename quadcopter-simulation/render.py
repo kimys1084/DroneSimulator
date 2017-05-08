@@ -5,7 +5,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from model.quadcopter import Quadcopter
-import controller3 as controller
+import attitude_controller as controller
+#import controller3 as controller
 import numpy as np
 NUMTILES = 10
 MAPSIZE =100
@@ -99,9 +100,9 @@ def draw_quadCopter(index):
 		
 	cur_pos = trajectory[index].pos
 	frame = quadCopter.world_frame()
-	z_des = quadCopter.get_z()
-	y_des = quadCopter.get_y()
-	x_des = quadCopter.get_x()
+	#z_des = quadCopter.get_z()
+	#y_des = quadCopter.get_y()
+	#x_des = quadCopter.get_x()
 	body_data = []
 	for col in range(0,4):
 		body_data.append(frame[:,col])
@@ -140,7 +141,7 @@ def draw_quadCopter(index):
 	glColor3f(0,255,0)
 	glVertex3fv(center)
 	glVertex3fv(center + acc)
-	
+	'''
 	glColor3f(0,0,255)
 	glVertex3fv(center)
 	glVertex3fv(center + z_des)
@@ -148,7 +149,7 @@ def draw_quadCopter(index):
 	glColor3f(0,255,255)
 	glVertex3fv(center)
 	glVertex3fv(center + y_des)
-		
+	'''	
 	
 	glColor3f(255,255,255)
 

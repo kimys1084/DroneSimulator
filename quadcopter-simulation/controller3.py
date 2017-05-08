@@ -62,16 +62,7 @@ def run(quad, des_state):
 	line2 = body_data[2] - center
 	up_vector = normalize(np.cross(line1, line2))
 	z_b = np.array([up_vector]).T
-	'''
-	y_b = v_cross(z_b, x_c)
-	y_b = normalize(y_b)
-	x_b = v_cross(y_b,z_b)
-	'''
-	#x_b = normalize(-np.array([line2]).T)
-	#y_b = normalize(np.array([line1]).T)
-	y_b = normalize(v_cross(z_b, x_c))
-	x_b = normalize(v_cross(y_b, z_b))
-	w_R_b = make_R(x_b, y_b, z_b)
+	
  	W_R_b = quad.rotation()
 
 	des_psi = des_state.yaw
@@ -95,33 +86,14 @@ def run(quad, des_state):
 	x_b_des = v_cross(y_b_des, z_b_des)
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
-	#R_des = np.array([[1,0,0],[0,1,0],[0,0,1]])
-	#quad.store_xyz(x_b_des, y_b_des, z_b_des)	
-	quad.store_xyz(x_b, z_b_des, z_b)	
-	#print ""
-	e_R_matrix = (np.dot(R_des.T, w_R_b) - np.dot(w_R_b.T, R_des))
+	#quad.store_xyz(x_b, z_b_des, z_b)	
+
+	e_R_matrix = (np.dot(R_des.T, W_R_b) - np.dot(W_R_b.T, R_des))
 	e_R = 0.5* vee_map(e_R_matrix)
 	
 	w_des = np.array([quad.get_pqr(params.dt, R_des)]).T
 	e_w = w_b - w_des
 
-	'''	
-	if int(quad.get_index()) == 1: #yaw +
-		M = np.array([[0,0,10]]).T
-		quad.set_index(5)
-	elif int(quad.get_index()) == 2: #yaw -
-		M = np.array([[0,0,-10]]).T
-		quad.set_index(5)
-	elif int(quad.get_index()) == 3: #roll +
-		M = np.array([[1,0,0]]).T
-		quad.set_index(5)
-	elif int(quad.get_index()) == 4: #roll +
-		M = np.array([[-1,0,0]]).T
-		quad.set_index(5)
-	else:							 #default
-		#M = np.array([[0,0,0]]).T
-		M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
-	'''
 
 	M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
 	F = np.dot(F_des.T, z_b)[0][0]
