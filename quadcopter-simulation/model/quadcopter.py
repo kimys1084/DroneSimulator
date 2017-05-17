@@ -162,7 +162,5 @@ class Quadcopter:
 		prop_thrusts_clamped = np.maximum(np.minimum(prop_thrusts, params.maxF/4), params.minF/4)
 		F = np.sum(prop_thrusts_clamped)
 		M = params.A[1:].dot(prop_thrusts_clamped)
-		print "after F : ", F
-		print "after M : ", M
 		self.state = integrate.odeint(self.state_dot, self.state, [0,dt], args = (F, M))[1]
 		self.acc = self.calculate_acc(self.state,dt, F)

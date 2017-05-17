@@ -1,6 +1,6 @@
 import numpy as np
 from collections import namedtuple
-
+from math import sin, cos
 # This generate a straight line along z axis for hover control
 def genLine(t):
 	v_max = 2.0;
@@ -142,11 +142,11 @@ def snap_Trajectory(wayPoints, end, dt):
 		yaw = 0
 		yawdot = 0
 		time +=dt
-		pos = np.array([0,0,0.1])
+		pos = np.array([0,0,0])
 		vel = np.array([0,0,0])
 		acc = np.array([0,0,0])
-		attitude = np.array([0,0,3])
-		omega = np.array([0,0,0])
+		attitude = np.array([0,sin(time*10),0])
+		omega = np.array([0,cos(time*10),0])
 		
 		DesiredState = namedtuple('DesiredState', 'pos vel acc attitude omega yaw yawdot')
 		trajectory_list.append(DesiredState(pos, vel, acc, attitude, omega, yaw, yawdot))
@@ -154,13 +154,3 @@ def snap_Trajectory(wayPoints, end, dt):
 	return trajectory_list
 
 
-def wayPoint():
-	
-	pos = np.array([1,1,10])
-	vel = np.array([0,0,0])
-	acc = np.array([0,0,0])
-	yaw = 0
-	yawdot = 0
-
-	DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
-	return DesiredState
