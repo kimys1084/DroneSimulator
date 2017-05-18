@@ -142,9 +142,9 @@ def snap_Trajectory(wayPoints, end, dt):
 		yaw = 0
 		yawdot = 0
 		time +=dt
-		pos = np.array([0,0,0])
-		vel = np.array([0,0,0])
-		acc = np.array([0,0,0])
+		#pos = np.array([0,0,0])
+		#vel = np.array([0,0,0])
+		#acc = np.array([0,0,0])
 		attitude = np.array([0,sin(time*10),0])
 		omega = np.array([0,cos(time*10),0])
 		

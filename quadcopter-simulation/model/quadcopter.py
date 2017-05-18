@@ -3,6 +3,9 @@ import scipy.integrate as integrate
 from utils.quaternion import Quaternion 
 from utils.utils import RPYToRot, RotToQuat, RotToRPY
 import model.params as params
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
 
 class Quadcopter:
 	""" Quadcopter class
@@ -55,8 +58,15 @@ class Quadcopter:
 		quadBodyFrame = params.body_frame.T
 		quadWorldFrame = wHb.dot(quadBodyFrame)
 		world_frame = quadWorldFrame[0:3]
-		return world_frame
+		return world_frame	
 
+	def get_wHb(self):
+		# return body to world frame rotation matrix
+		origin = self.state[0:3]
+		quat = Quaternion(self.state[6:10])
+		rot = quat.as_rotation_matrix()
+		wHb = np.r_[np.c_[rot,origin], np.array([[0, 0, 0, 1]])]
+		return wHb
 
 	def position(self):
 		return self.state[0:3]

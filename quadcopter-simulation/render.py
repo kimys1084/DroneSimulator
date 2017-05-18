@@ -1,12 +1,10 @@
-import pygame
-#from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from model.quadcopter import Quadcopter
-import attitude_controller as controller
-#import controller3 as controller
+#import attitude_controller as controller
+import position_controller as controller
 import numpy as np
 NUMTILES = 10
 MAPSIZE =100
@@ -124,34 +122,57 @@ def draw_quadCopter(index):
 	glVertex3fv(cur_pos)
 	glEnd()
 	glColor3f(255,255,255)
+	#------------draw quadcopter
+	
+	x,y,z = quadCopter.position()
+	rx, ry, rz = quadCopter.attitude()
+	
+	glPushMatrix()
 
+	glTranslatef(x,y,z)
+	glRotatef(ry*180.0/3.14, 0,1,0)
+	glRotatef(rx*180.0/3.14, 1,0,0)
+	glRotatef(rz*180.0/3.14, 0,0,1)
+
+	
+	glPushMatrix()
+	
+	glScalef(0.7, 0.1, 0.1)
+	glColor3f(1,0,1)
+	glutSolidCube(1.0)
+	glColor3f(0,0,0)
+	glutWireCube(1.0)
+	
+	glPopMatrix()
+	
+	glPushMatrix()
+	glRotatef(90,0,0,1)
+	glScalef(0.7, 0.1, 0.1)
+	glColor3f(1,0,1)
+	glutSolidCube(1.0)
+	glColor3f(0,0,0)
+	glutWireCube(1.0)
+	glPopMatrix()
+
+
+	glPopMatrix()
+
+	
+	
 	glBegin(GL_LINES)
+	'''
 	glVertex3fv(body_data[0])
 	glVertex3fv(body_data[2])
 
 	glVertex3fv(body_data[1])
 	glVertex3fv(body_data[3])
-
-
-	
-	#for debug
+	'''
 	
 	#desired force vector
 
 	glColor3f(0,255,0)
 	glVertex3fv(center)
 	glVertex3fv(center + acc)
-	'''
-	glColor3f(0,0,255)
-	glVertex3fv(center)
-	glVertex3fv(center + z_des)
-	
-	glColor3f(0,255,255)
-	glVertex3fv(center)
-	glVertex3fv(center + y_des)
-	'''	
-	
-	glColor3f(255,255,255)
 
 	glEnd()	
 

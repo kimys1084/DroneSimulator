@@ -93,7 +93,7 @@ def run(quad, des_state):
 	
 	z_err = -np.dot(k_p, e_p) - np.dot(k_v, e_v) +gravity + params.mass*des_acc # -k_p*e_p -k_v*e_v +mgZw + ma_des
 
-	F =np.dot(R_des,z_err)[2][0]
+	F =np.dot(z_err.T,z_b)[0][0]
 	#F = (params.mass * gravity)[2][0]
 	#print F
 	return F, M
