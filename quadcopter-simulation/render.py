@@ -5,38 +5,62 @@ from OpenGL.GLUT import *
 from model.quadcopter import Quadcopter
 #import attitude_controller as controller
 import position_controller as controller
+import printManual as manual
 import numpy as np
-NUMTILES = 10
-MAPSIZE =100
+NUMTILES = 100
+MAPSIZE =10
 width = 1600
 height = 1200
 play = True
 index = 0
 delay = 100
-def DrawMap():
+light0 = True
+lightPos = [-10.0, 10.0, 10.0, 0.0] 
+
+lightKa = [0.5, 0.0, 0.0, 1.0]
+lightKd = [0.5, 0.5, 0.0, 1.0]
+lightKs = [0.5, 1.0, 1.0 , 1.0]
+matKs = [1.0, 1.0, 1.0, 1.0]
+matShininess = 50.0
+
+
+
+
+def drawFloor():
+	for col in range(-MAPSIZE, MAPSIZE, NUMTILES):
+		for row in range(-MAPSIZE, MAPSIZE, NUMTILES):
+			glBegin(GL_POLYGON)
+			glNormal3d(0,0,1)
+			glVertex3f(col, row, 0)
+			glVertex3f(col+NUMTILES, row, 0)
+			glVertex3f(col+NUMTILES, row+NUMTILES, 0)
+			glVertex3f(col, row+NUMTILES, 0)
+			glEnd()
+def drawMap():
 
 	glColor3f(255,255,255)
 	glBegin(GL_LINES)
 	interval = MAPSIZE / NUMTILES
 	#draw xyz plain
 	for i in range(0, NUMTILES+1):
-		glVertex3f(0, i*interval, 0)
-		glVertex3f(MAPSIZE, i*interval, 0)
+		
+		glVertex3f(0, float(i)*interval, 0)
+		glVertex3f(MAPSIZE, float(i)*interval, 0)
 	
-		glVertex3f(0, i*interval, 0)
-		glVertex3f(0, i*interval, MAPSIZE)
+		glVertex3f(0, float(i)*interval, 0)
+		glVertex3f(0, float(i)*interval, MAPSIZE)
 
-		glVertex3f(i*interval, 0, 0)
-		glVertex3f(i*interval, MAPSIZE, 0)
+		glVertex3f(float(i)*interval, 0, 0)
+		glVertex3f(float(i)*interval, MAPSIZE, 0)
 
-		glVertex3f(i*interval, 0, 0)
-		glVertex3f(i*interval, 0, MAPSIZE)
+		glVertex3f(float(i)*interval, 0, 0)
+		glVertex3f(float(i)*interval, 0, MAPSIZE)
 
-		glVertex3f(0, 0, i*interval)
-		glVertex3f(MAPSIZE, 0, i*interval)
+		glVertex3f(0, 0, float(i)*interval)
+		glVertex3f(MAPSIZE, 0, float(i)*interval)
 	
-		glVertex3f(0, 0, i*interval)
-		glVertex3f(0, MAPSIZE, i*interval)
+		glVertex3f(0, 0, float(i)*interval)
+		glVertex3f(0, MAPSIZE, float(i)*interval)
 	glEnd()
 
 	glPointSize(10)
@@ -134,15 +158,13 @@ def draw_quadCopter(index):
 	glRotatef(rx*180.0/3.14, 1,0,0)
 	glRotatef(rz*180.0/3.14, 0,0,1)
 
-	
 	glPushMatrix()
 	
 	glScalef(0.7, 0.1, 0.1)
-	glColor3f(1,0,1)
+	glColor3f(0.5,0,0.5)
 	glutSolidCube(1.0)
 	glColor3f(0,0,0)
 	glutWireCube(1.0)
-	
 	glPopMatrix()
 	
 	glPushMatrix()
@@ -160,30 +182,37 @@ def draw_quadCopter(index):
 	
 	
 	glBegin(GL_LINES)
-	'''
-	glVertex3fv(body_data[0])
-	glVertex3fv(body_data[2])
-
-	glVertex3fv(body_data[1])
-	glVertex3fv(body_data[3])
-	'''
-	
-	#desired force vector
 
 	glColor3f(0,255,0)
 	glVertex3fv(center)
 	glVertex3fv(center + acc)
 
 	glEnd()	
+	#position vector
+	glPushMatrix()
+	
+	glBegin(GL_LINES)
+	glVertex3f(0,0,0)
+	glVertex3f(x,y,z)
+	glColor3f(0,0,1)
+	glEnd()
+	glPopMatrix()
+
+def setLight():
+
+	if light0 :
+		glEnable(GL_LIGHT0)
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lightKa)
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightKd)
+		glLightfv(GL_LIGHT0, GL_SPECULAR, lightKs)
+		glLightfv(GL_LIGHT0, GL_POSITION, lightPos)
+	#else glDisable(GL_LIGHT0)
 
 def draw_world():
 
-
-	global play
-	global index
 	initializeWindow()
 	initializeSetting()
-	printManual()
+	manual.printManual()
 	prepareCamera()
 	glutMainLoop()
 	
@@ -235,27 +264,17 @@ def keyboard(ch, x, y):
 		quadCopter.set_index(3)	
 
 	elif ch == chr(102): # 'f' roll -
-		quadCopter.set_index(4)	
+		quadCopter.set_index(4)
+	elif ch == '1':
+		global light0
+		light0 ^=True
+		print light0
+		
 
 
 	else:
 		x,y = normalize_xy(x,y)
 		camera.keyboard(ch, x,y)
-def printManual():
-	print "----------quadrotor simulator by YS KIM----------"
-	print ""
-	print "o : simulation stop"
-	print "p : simulation play"
-	print "---- camera control------------------------------"
-	print "w : dolly in"
-	print "s : dolly out"
-	print "d : zoom in"
-	print "a : zoom out"
-	print "m : print manual"
-	print "n : Increase delaay"
-	print "b : Decrease delay"
-	print "SHIFT + DRAG : translate camera"
-	print "DRAG : rotate camera"
 
 def mouse(button, state, x, y):
 	x,y = normalize_xy(x,y)
@@ -264,6 +283,8 @@ def mouse(button, state, x, y):
 def motion(x,y):
 	x, y = normalize_xy(x, y)
 	camera.motion(x,y)
+
+#rendering part ------
 def display():
 
 	global index
@@ -276,11 +297,23 @@ def display():
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 	glMatrixMode(GL_MODELVIEW)
+	#glEnable(GL_DEPTH_TEST)
+	#glEnable(GL_LIGHTING)
+	
+	#setLight()
+
+
+	glMaterialfv(GL_FRONT, GL_SPECULAR, matKs)
+	glMaterialfv(GL_FRONT, GL_SHININESS, matShininess)
 
 
 	#------------------DRAW AND UPDATE-----------
-	DrawMap()
-	draw_trajectory()
+	glPushMatrix()
+	glColor3f(0.4,0.4,0.4)
+	#drawFloor()
+	glPopMatrix()
+	drawMap()
+	#draw_trajectory()
 	draw_quadCopter(index)
 
 	if index < len(trajectory):
@@ -288,6 +321,7 @@ def display():
 			index+=1
 
 	#--------------------------------------------
+	#glDisable(GL_LIGHTING)
 	glutSwapBuffers()
 
 	# --> maybe have to put this : pygame.time.wait(10)
