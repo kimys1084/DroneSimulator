@@ -3,6 +3,7 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from plot import plot_err
 from model.quadcopter import Quadcopter
+from Json import ListToJsonFile
 from collections import namedtuple
 #import attitude_controller as controller
 import position_controller as controller
@@ -293,25 +294,13 @@ def keyboard(ch, x, y):
 			print "delay : ", delay
 
 	#------------------drone command-------
-	elif ch == chr(116): # 't' yaw +
-		quadCopter.set_index(1)	
-		
-	elif ch == chr(103): # 'g' yaw -
-		quadCopter.set_index(2)	
-
-	elif ch == chr(104): # 'h' roll +
-		quadCopter.set_index(3)	
-
-	elif ch == chr(102): # 'f' roll -
-		quadCopter.set_index(4)
-
 	elif ch ==  'r':
 		global trajectory
 		global actual
 		plot_err(trajectory, actual)
 	elif ch == 't':
 		print "make Json File"
-		listToJsonFile(actual, "droneOuput.txt")
+		ListToJsonFile(actual, "droneOuput.txt")
 		
 
 
