@@ -11,5 +11,7 @@ def printManual():
 	print "m : print manual"
 	print "n : Increase delaay"
 	print "b : Decrease delay"
+	print "r : plot error(only can use after trajectory tracking Finish)"
+	print "t : make JsonFile(only can use atter trajectory tracking Finish)"
 	print "SHIFT + DRAG : translate camera"
 	print "DRAG : rotate camera"

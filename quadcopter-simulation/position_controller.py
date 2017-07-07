@@ -19,12 +19,12 @@ v_v = 2
 k_v = np.array([[v_v,0,0],
 				[0,v_v,0],
 				[0,0,v_v]])
-v_r= 10
+v_r= 50 #10
 k_r = np.array([[v_r,0,0],
 				[0, v_r,0],
 				[0,0,v_r]])
 
-v_w =0.3
+v_w =1.0 #0.3
 k_w = np.array([[v_w,0,0],
 				[0,v_w,0],
 				[0,0,v_w]])
@@ -67,7 +67,8 @@ def run(quad, des_state):
 
 	des_psi = des_state.yaw
 	des_psi_dot = des_state.yawdot
-
+	des_psi = 0
+	des_psi_dot = 0
 
 	e_p = pos - des_pos
 	e_v = vel - des_vel
@@ -84,9 +85,10 @@ def run(quad, des_state):
 	y_b_des = v_cross(z_b_des, x_c_des)
 	y_b_des = normalize(y_b_des)
 	x_b_des = v_cross(y_b_des, z_b_des)
+	x_b_des = normalize(x_b_des)
 
 	R_des = make_R(x_b_des, y_b_des, z_b_des)
-	#quad.store_xyz(x_b, z_b_des, z_b)	
+	quad.store_xyz(x_b_des, y_b_des, z_b_des)	
 
 	e_R_matrix = (np.dot(R_des.T, W_R_b) - np.dot(W_R_b.T, R_des))
 	e_R = 0.5* vee_map(e_R_matrix)
@@ -97,12 +99,14 @@ def run(quad, des_state):
 
 	M = -np.dot(k_r,e_R) - np.dot(k_w,e_w)
 	F = np.dot(F_des.T, z_b)[0][0]
+	#print des_state.pos
+	#print quad.position()
+	#print "F : ", F
+	#print "M : ", M 
 	if debug == True:
 		print "R_des", R_des
 		print ""
-		print "w_R_b", w_R_b
-		print ""
-		print e_R_matrix
+		print w_des
 		print "F : " ,F
 		print "M :", M
 		print ""
@@ -130,7 +134,15 @@ def v_cross(a,b):
 	
 	v = np.array([t_v]).T
 	return v
+
+def v_dot(a,b):
+	t_a = np.array([a[0][0], a[1][0], a[2][0]])
+	t_b = np.array([b[0][0], b[1][0], b[2][0]])
 	
+	t_v = np.dot(t_a, t_b)
+	
+	return t_v
+
 def make_R(a1,a2,a3):
 	
 	R = np.array([[a1[0][0], a2[0][0], a3[0][0]],

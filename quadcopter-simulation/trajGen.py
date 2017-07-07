@@ -2,43 +2,6 @@ import numpy as np
 from collections import namedtuple
 from math import sin, cos
 # This generate a straight line along z axis for hover control
-def genLine(t):
-	v_max = 2.0;
-	a_max = 2.0;
-	yaw = 0.0;
-	yawdot = 0.3;
-    # 1x3 matrix x,y,z
-	initial_pos = np.zeros(3)
-	acc = np.zeros(3)
-	vel = np.zeros(3)
-
-    # accelarate
-	if t <= v_max / a_max:
-		dt = t
-		acc[2] = a_max
-		vel = acc * dt
-		pos = 0.5 * acc * dt**2
-    # constant velocity
-	elif t <= 2 * v_max / a_max:
-		dt = t - v_max / a_max
-		vel[2] = v_max
-		pos = np.array([0, 0, v_max**2 / (2 * a_max)]) + np.array([0, 0, v_max * dt])
-    # decelarate    
-	elif t <= 3 * v_max / a_max:
-		dt = t - 2 * v_max / a_max
-		acc[2] = -a_max
-		vel = np.array([0, 0, v_max]) + acc * dt
-		pos = np.array([0, 0, 3 * v_max**2 / (2 * a_max)]) + np.array([0, 0, v_max]) * dt + 0.5 * acc * dt**2
-    # hover 
-	else:
-		pos = np.array([0, 0, 2 * v_max**2 / a_max])
-			
-		
-	pos += initial_pos
-	DesiredState = namedtuple('DesiredState', 'pos vel acc yaw yawdot')
-	return DesiredState(pos, vel, acc, yaw, yawdot)
-
-
 def snap_Trajectory(wayPoints, end, dt):
 
 	time =0.0
@@ -61,7 +24,6 @@ def snap_Trajectory(wayPoints, end, dt):
 	A = np.r_[A, np.c_[np.zeros((1, 0)), np.ones((1,8)), np.zeros((1, 8*(n-1)))]]
 	temp = [[wayPoints[1][0], wayPoints[1][1], wayPoints[1][2]]]
 	b = np.r_[b, temp]
-
 
 	for i in range(1, n):
 		A = np.r_[A, np.c_[np.zeros((1, 8*i)), 1, np.zeros((1,7)), np.zeros((1, 8*(n-i-1)))]]
@@ -105,6 +67,7 @@ def snap_Trajectory(wayPoints, end, dt):
 		b = np.r_[b,np.zeros((1,3))]
 		b = np.r_[b,np.zeros((1,3))]
 		b = np.r_[b,np.zeros((1,3))]
+		print i
 
 
 	alpha = np.linalg.inv(A).dot(b)
@@ -139,14 +102,14 @@ def snap_Trajectory(wayPoints, end, dt):
 			vel = np.array([0, 1, 2*scale, 3*scale**2, 4*scale**3, 5*scale**4, 6*scale**5, 7*scale**6]).dot(coefficients)
 			acc = np.array([0, 0, 2, 6*scale, 12*scale**2, 20*scale**3, 30*scale**4, 42*scale**5]).dot(coefficients)
 
-		yaw = 0
-		yawdot = 0
+		yaw = 0#sin(time/2)
+		yawdot = 0 # cos(time/2)
 		time +=dt
 		#pos = np.array([0,0,0])
 		#vel = np.array([0,0,0])
 		#acc = np.array([0,0,0])
-		attitude = np.array([0,sin(time*10),0])
-		omega = np.array([0,cos(time*10),0])
+		attitude = np.array([0,0,0])
+		omega = np.array([0,0,0])
 		
 		DesiredState = namedtuple('DesiredState', 'pos vel acc attitude omega yaw yawdot')
 		trajectory_list.append(DesiredState(pos, vel, acc, attitude, omega, yaw, yawdot))

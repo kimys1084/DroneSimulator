@@ -1,19 +1,22 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-
+from plot import plot_err
 from model.quadcopter import Quadcopter
+from collections import namedtuple
 #import attitude_controller as controller
 import position_controller as controller
 import printManual as manual
 import numpy as np
+import math
+
 NUMTILES = 100
 MAPSIZE =10
 width = 1600
 height = 1200
 play = True
 index = 0
-delay = 100
+delay = 0
 light0 = True
 lightPos = [-10.0, 10.0, 10.0, 0.0] 
 
@@ -38,7 +41,7 @@ def drawFloor():
 			glEnd()
 def drawMap():
 
-	glColor3f(255,255,255)
+	glColor3f(0,0,0)
 	glBegin(GL_LINES)
 	interval = MAPSIZE / NUMTILES
 	#draw xyz plain
@@ -75,7 +78,7 @@ def drawMap():
 
 def draw_trajectory():
 	
-	glColor3f(0,255,0)
+	glColor3f(255,0,0)
 	glBegin(GL_LINES)
 	for i in range(0, len(trajectory)):
 		glVertex3fv(trajectory[i].pos)
@@ -91,6 +94,8 @@ def init(initPos, initAttitude, deltaTime, input_trajectory):
 	global quadCopter
 	global ex_time
 	global dt
+	global actual
+	actual = []
 	ex_time =0
 	dt = deltaTime
 	trajectory =  input_trajectory
@@ -110,10 +115,27 @@ def update_state(index):
 	quadCopter.update(dt,F,M)
 	
 
+def stateEvaluation(index):
+	desired_state = trajectory[index]
+	des_pos = desired_state.pos
+	des_yaw = desired_state.yaw
+	cur_pos =quadCopter.position()
+	nouse1, nouse2, cur_yaw = quadCopter.attitude()
+
+	#distance btw des_pos a& cur_pos
+	error = math.sqrt((des_pos[0]- cur_pos[0])**2 + (des_pos[1]- cur_pos[1])**2 + (des_pos[2]- cur_pos[2])**2)
+	threshold = 0.01
+	#print error
+	#print "vel : ", desired_state.vel
+	#print "acc : ", desired_state.acc
+	if error <= threshold:
+		return True
+	else: return False
 
 #draw quadcopter
 def draw_quadCopter(index):
 	global play
+	global actual
 	if play == True:	
 		update_state(index)
 
@@ -122,9 +144,7 @@ def draw_quadCopter(index):
 		
 	cur_pos = trajectory[index].pos
 	frame = quadCopter.world_frame()
-	#z_des = quadCopter.get_z()
-	#y_des = quadCopter.get_y()
-	#x_des = quadCopter.get_x()
+
 	body_data = []
 	for col in range(0,4):
 		body_data.append(frame[:,col])
@@ -149,6 +169,14 @@ def draw_quadCopter(index):
 	#------------draw quadcopter
 	
 	x,y,z = quadCopter.position()
+	rotx,roty,rotz = quadCopter.attitude()
+	pos = np.array([x,y,z])
+	attitude = np.array([rotx,roty,rotz])
+	
+	if len(actual) <= len(trajectory):
+		ActualState = namedtuple('ActualState', 'pos, attitude')
+		actual.append(ActualState(pos, attitude))
+	
 	rx, ry, rz = quadCopter.attitude()
 	
 	glPushMatrix()
@@ -160,7 +188,7 @@ def draw_quadCopter(index):
 
 	glPushMatrix()
 	
-	glScalef(0.7, 0.1, 0.1)
+	glScalef(0.45, 0.02, 0.02)
 	glColor3f(0.5,0,0.5)
 	glutSolidCube(1.0)
 	glColor3f(0,0,0)
@@ -169,7 +197,7 @@ def draw_quadCopter(index):
 	
 	glPushMatrix()
 	glRotatef(90,0,0,1)
-	glScalef(0.7, 0.1, 0.1)
+	glScalef(0.45, 0.02, 0.02)
 	glColor3f(1,0,1)
 	glutSolidCube(1.0)
 	glColor3f(0,0,0)
@@ -181,22 +209,27 @@ def draw_quadCopter(index):
 
 	
 	
-	glBegin(GL_LINES)
+	# glBegin(GL_LINES)
 
-	glColor3f(0,255,0)
-	glVertex3fv(center)
-	glVertex3fv(center + acc)
+	# glColor3f(0,255,0)
+	# glVertex3fv(center)
+	# glVertex3fv(center + acc)
 
-	glEnd()	
+	# glEnd()	
 	#position vector
-	glPushMatrix()
+	# glPushMatrix()
+	# glBegin(GL_LINES)
+	# glColor3f(255,0,255)
+	# glVertex3f(x,y,z)
+	# glVertex3f(quadCopter.get_x()[0] - x,quadCopter.get_x()[1] - y,quadCopter.get_x()[2] - z)
 	
-	glBegin(GL_LINES)
-	glVertex3f(0,0,0)
-	glVertex3f(x,y,z)
-	glColor3f(0,0,1)
-	glEnd()
-	glPopMatrix()
+	# glVertex3f(x,y,z)
+	# glVertex3f(quadCopter.get_y()[0] - x,quadCopter.get_y()[1] - y,quadCopter.get_y()[2] - z)
+	
+	# glVertex3f(x,y,z)
+	# glVertex3f(quadCopter.get_z()[0] - x,quadCopter.get_z()[1] - y,quadCopter.get_z()[2] - z)
+	# glEnd()
+	# glPopMatrix()
 
 def setLight():
 
@@ -242,16 +275,22 @@ def keyboard(ch, x, y):
 		print "simulation start"
 		play = True
 	elif ch == chr(109): # 'm' print manual
-		printManual()
+		manual.printManual()
 	elif ch ==  chr(110): # 'n' increase delay
-		delay += 10
+		if delay < 10:
+			delay += 1
+		else:
+			delay += 10
 		print "Increase delay : ", delay
 	elif ch == chr(98): # 'b' decrease delay
-		if delay <= 10:
-			print "delay : ", delay
-		else:
+		if delay <= 10 and delay > 1:
+			delay -= 1
+			print "Decrease delay : ", delay
+		elif delay > 10:
 			delay -= 10
 			print "Decrease delay :", delay
+		else:
+			print "delay : ", delay
 
 	#------------------drone command-------
 	elif ch == chr(116): # 't' yaw +
@@ -265,10 +304,14 @@ def keyboard(ch, x, y):
 
 	elif ch == chr(102): # 'f' roll -
 		quadCopter.set_index(4)
-	elif ch == '1':
-		global light0
-		light0 ^=True
-		print light0
+
+	elif ch ==  'r':
+		global trajectory
+		global actual
+		plot_err(trajectory, actual)
+	elif ch == 't':
+		print "make Json File"
+		listToJsonFile(actual, "droneOuput.txt")
 		
 
 
@@ -292,7 +335,7 @@ def display():
 	if camera.is_animating():
 		glClearColor(0.5,0.5,0.5,0.0)
 	else:
-		glClearColor(0.0,0.0,0.0,0.0)
+		glClearColor(20.0,20,20,1.0)
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -309,21 +352,23 @@ def display():
 
 	#------------------DRAW AND UPDATE-----------
 	glPushMatrix()
-	glColor3f(0.4,0.4,0.4)
-	#drawFloor()
+	glColor3f(50,50,50)
+	drawFloor()
 	glPopMatrix()
 	drawMap()
-	#draw_trajectory()
+	draw_trajectory()
 	draw_quadCopter(index)
 
 	if index < len(trajectory):
 		if play == True:
+			#if stateEvaluation(index) == True:
+				#print index
 			index+=1
 
 	#--------------------------------------------
 	#glDisable(GL_LIGHTING)
 	glutSwapBuffers()
-
+	glutPostRedisplay()
 	# --> maybe have to put this : pygame.time.wait(10)
 
 def initializeWindow():
@@ -338,7 +383,7 @@ def initializeWindow():
 	glutKeyboardFunc(keyboard)
 	glutMouseFunc(mouse)
 	glutMotionFunc(motion)
-	glutTimerFunc(delay, on_timer, 0)
+	#glutTimerFunc(delay, on_timer, 0)
 
 def initializeSetting():
 	glClearDepth(1.0)
